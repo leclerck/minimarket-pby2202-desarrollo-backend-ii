@@ -1,12 +1,26 @@
 package com.minimarket.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+
 import jakarta.persistence.*;
 import java.util.List;
 
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(exclude = "productos")
 public class Categoria {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @Column(nullable = false, unique = true)
@@ -15,28 +29,4 @@ public class Categoria {
     @OneToMany(mappedBy = "categoria", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Producto> productos;
 
-    // Getters y Setters
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getNombre() {
-        return nombre;
-    }
-
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
-
-    public List<Producto> getProductos() {
-        return productos;
-    }
-
-    public void setProductos(List<Producto> productos) {
-        this.productos = productos;
-    }
 }

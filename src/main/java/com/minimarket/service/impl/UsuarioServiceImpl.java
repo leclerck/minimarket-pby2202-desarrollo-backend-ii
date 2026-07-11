@@ -3,7 +3,6 @@ package com.minimarket.service.impl;
 import com.minimarket.entity.Usuario;
 import com.minimarket.repository.UsuarioRepository;
 import com.minimarket.service.UsuarioService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -13,11 +12,13 @@ import java.util.Optional;
 @Service
 public class UsuarioServiceImpl implements UsuarioService {
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    public UsuarioServiceImpl(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
+        this.usuarioRepository = usuarioRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @Override
     public List<Usuario> findAll() {

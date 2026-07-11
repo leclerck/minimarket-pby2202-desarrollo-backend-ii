@@ -3,7 +3,6 @@ package com.minimarket.service.impl;
 import com.minimarket.entity.Carrito;
 import com.minimarket.repository.CarritoRepository;
 import com.minimarket.service.CarritoService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,8 +10,11 @@ import java.util.List;
 @Service
 public class CarritoServiceImpl implements CarritoService {
 
-    @Autowired
-    private CarritoRepository carritoRepository;
+    private final CarritoRepository carritoRepository;
+
+    public CarritoServiceImpl(CarritoRepository carritoRepository) {
+        this.carritoRepository = carritoRepository;
+    }
 
     @Override
     public List<Carrito> findAll() {

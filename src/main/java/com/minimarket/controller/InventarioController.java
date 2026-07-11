@@ -1,17 +1,15 @@
 package com.minimarket.controller;
 
-import com.minimarket.dto.DtoMapper;
 import com.minimarket.dto.InventarioDto;
-import com.minimarket.dto.InventarioRequestDto;
+import com.minimarket.dto.request.InventarioRequestDto;
+import com.minimarket.dto.DtoMapper;
 import com.minimarket.entity.Inventario;
 import com.minimarket.service.InventarioService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
-
 /**
  * Movimientos de inventario. Acceso restringido a STAFF y ADMIN.
  */
@@ -20,11 +18,14 @@ import java.util.List;
 @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
 public class InventarioController {
 
-    @Autowired
-    private InventarioService inventarioService;
+    private final InventarioService inventarioService;
 
-    @Autowired
-    private DtoMapper dtoMapper;
+    private final DtoMapper dtoMapper;
+
+    public InventarioController(InventarioService inventarioService, DtoMapper dtoMapper) {
+        this.inventarioService = inventarioService;
+        this.dtoMapper = dtoMapper;
+    }
 
     @GetMapping
     public List<InventarioDto> listarMovimientosDeInventario() {

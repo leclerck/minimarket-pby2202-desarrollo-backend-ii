@@ -1,8 +1,6 @@
-package com.minimarket.dto;
+package com.minimarket.dto.request;
 
 import java.math.BigDecimal;
-
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -10,14 +8,11 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-@EqualsAndHashCode
-public class ProductoDto {
+public class ProductoRequestDto {
 
-    private Long id;
     private String nombre;
     private BigDecimal precio;
     private Integer stock;
     private Long categoriaId;
-    private String categoriaNombre;
 
 }

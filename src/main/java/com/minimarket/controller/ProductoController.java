@@ -2,10 +2,9 @@ package com.minimarket.controller;
 
 import com.minimarket.dto.DtoMapper;
 import com.minimarket.dto.ProductoDto;
-import com.minimarket.dto.ProductoRequestDto;
+import com.minimarket.dto.request.ProductoRequestDto;
 import com.minimarket.entity.Producto;
 import com.minimarket.service.ProductoService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -19,11 +18,14 @@ import java.util.List;
 @RequestMapping("/api/productos")
 public class ProductoController {
 
-    @Autowired
-    private ProductoService productoService;
+    private final ProductoService productoService;
 
-    @Autowired
-    private DtoMapper dtoMapper;
+    private final DtoMapper dtoMapper;
+
+    public ProductoController(ProductoService productoService, DtoMapper dtoMapper) {
+        this.productoService = productoService;
+        this.dtoMapper = dtoMapper;
+    }
 
     @GetMapping
     public List<ProductoDto> listarProductos() {

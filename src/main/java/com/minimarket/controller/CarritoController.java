@@ -1,11 +1,10 @@
 package com.minimarket.controller;
 
 import com.minimarket.dto.CarritoDto;
-import com.minimarket.dto.CarritoRequestDto;
+import com.minimarket.dto.request.CarritoRequestDto;
 import com.minimarket.dto.DtoMapper;
 import com.minimarket.entity.Carrito;
 import com.minimarket.service.CarritoService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -20,11 +19,13 @@ import java.util.List;
 @PreAuthorize("hasAnyRole('USER', 'STAFF', 'ADMIN')")
 public class CarritoController {
 
-    @Autowired
-    private CarritoService carritoService;
+    private final CarritoService carritoService;
+    private final DtoMapper dtoMapper;
 
-    @Autowired
-    private DtoMapper dtoMapper;
+    public CarritoController(CarritoService carritoService, DtoMapper dtoMapper) {
+        this.carritoService = carritoService;
+        this.dtoMapper = dtoMapper;
+    }
 
     @GetMapping
     public List<CarritoDto> listarCarrito() {

@@ -1,11 +1,10 @@
 package com.minimarket.controller;
 
 import com.minimarket.dto.DetalleVentaDto;
-import com.minimarket.dto.DetalleVentaRequestDto;
+import com.minimarket.dto.request.DetalleVentaRequestDto;
 import com.minimarket.dto.DtoMapper;
 import com.minimarket.entity.DetalleVenta;
 import com.minimarket.service.DetalleVentaService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -19,11 +18,13 @@ import java.util.List;
 @RequestMapping("/api/detalle-ventas")
 public class DetalleVentaController {
 
-    @Autowired
-    private DetalleVentaService detalleVentaService;
+    private final DetalleVentaService detalleVentaService;
+    private final DtoMapper dtoMapper;
 
-    @Autowired
-    private DtoMapper dtoMapper;
+    public DetalleVentaController(DetalleVentaService detalleVentaService, DtoMapper dtoMapper) {
+        this.detalleVentaService = detalleVentaService;
+        this.dtoMapper = dtoMapper;
+    }
 
     @GetMapping
     @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")

@@ -1,18 +1,16 @@
 package com.minimarket.controller;
 
-import com.minimarket.dto.DtoMapper;
 import com.minimarket.dto.UsuarioDto;
-import com.minimarket.dto.UsuarioRequestDto;
+import com.minimarket.dto.request.UsuarioRequestDto;
+import com.minimarket.dto.DtoMapper;
 import com.minimarket.entity.Usuario;
 import com.minimarket.service.UsuarioService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
-
 /**
  * Gestión de usuarios. Acceso restringido exclusivamente al rol ADMIN.
  */
@@ -21,11 +19,14 @@ import java.util.Optional;
 @PreAuthorize("hasRole('ADMIN')")
 public class UsuarioController {
 
-    @Autowired
-    private UsuarioService usuarioService;
+    private final UsuarioService usuarioService;
 
-    @Autowired
-    private DtoMapper dtoMapper;
+    private final DtoMapper dtoMapper;
+
+    public UsuarioController(UsuarioService usuarioService, DtoMapper dtoMapper) {
+        this.usuarioService = usuarioService;
+        this.dtoMapper = dtoMapper;
+    }
 
     @GetMapping
     public List<UsuarioDto> listarUsuarios() {

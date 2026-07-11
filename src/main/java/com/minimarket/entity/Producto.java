@@ -1,18 +1,33 @@
 package com.minimarket.entity;
 
+import java.math.BigDecimal;
+
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString
 public class Producto {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @Column(nullable = false)
     private String nombre;
 
     @Column(nullable = false)
-    private Double precio;
+    private BigDecimal precio;
 
     @Column(nullable = false)
     private Integer stock;
@@ -21,44 +36,4 @@ public class Producto {
     @JoinColumn(name = "categoria_id", nullable = false)
     private Categoria categoria;
 
-    // Getters y Setters
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getNombre() {
-        return nombre;
-    }
-
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
-
-    public Double getPrecio() {
-        return precio;
-    }
-
-    public void setPrecio(Double precio) {
-        this.precio = precio;
-    }
-
-    public Integer getStock() {
-        return stock;
-    }
-
-    public void setStock(Integer stock) {
-        this.stock = stock;
-    }
-
-    public Categoria getCategoria() {
-        return categoria;
-    }
-
-    public void setCategoria(Categoria categoria) {
-        this.categoria = categoria;
-    }
 }

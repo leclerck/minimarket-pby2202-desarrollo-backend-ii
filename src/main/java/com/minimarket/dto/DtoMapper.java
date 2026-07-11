@@ -1,5 +1,12 @@
 package com.minimarket.dto;
 
+import com.minimarket.dto.request.CarritoRequestDto;
+import com.minimarket.dto.request.CategoriaRequestDto;
+import com.minimarket.dto.request.DetalleVentaRequestDto;
+import com.minimarket.dto.request.InventarioRequestDto;
+import com.minimarket.dto.request.ProductoRequestDto;
+import com.minimarket.dto.request.UsuarioRequestDto;
+import com.minimarket.dto.request.VentaRequestDto;
 import com.minimarket.entity.*;
 import com.minimarket.repository.*;
 import org.springframework.stereotype.Component;
@@ -33,10 +40,7 @@ public class DtoMapper {
     // --- Rol ---
 
     public RolDto toDto(Rol rol) {
-        RolDto dto = new RolDto();
-        dto.setId(rol.getId());
-        dto.setNombre(rol.getNombre());
-        return dto;
+        return new RolDto(rol.getId(), rol.getNombre());
     }
 
     // --- Usuario ---
@@ -78,10 +82,7 @@ public class DtoMapper {
     // --- Categoria ---
 
     public CategoriaDto toDto(Categoria categoria) {
-        CategoriaDto dto = new CategoriaDto();
-        dto.setId(categoria.getId());
-        dto.setNombre(categoria.getNombre());
-        return dto;
+        return new CategoriaDto(categoria.getId(), categoria.getNombre());
     }
 
     public List<CategoriaDto> toCategoriaDtos(List<Categoria> categorias) {

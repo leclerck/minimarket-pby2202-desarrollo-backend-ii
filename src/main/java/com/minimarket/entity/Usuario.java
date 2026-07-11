@@ -1,19 +1,31 @@
 package com.minimarket.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+
 import java.util.Set;
 
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(exclude = "roles")
 public class Usuario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @Column(nullable = false, unique = true)
     private String username;
 
-    @JsonIgnore // Evita exponer la contraseña (y el hash) en respuestas JSON
     @Column(nullable = false)
     private String password;
 
@@ -25,36 +37,4 @@ public class Usuario {
     )
     private Set<Rol> roles;
 
-    // Getters y Setters
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public Set<Rol> getRoles() {
-        return roles;
-    }
-
-    public void setRoles(Set<Rol> roles) {
-        this.roles = roles;
-    }
 }

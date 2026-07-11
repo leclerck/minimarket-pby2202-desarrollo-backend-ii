@@ -1,13 +1,27 @@
 package com.minimarket.entity;
 
 import jakarta.persistence.*;
-import java.util.Date;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+
+import java.time.LocalDate;
 import java.util.List;
 
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(exclude = "detalles")
 public class Venta {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @ManyToOne
@@ -15,41 +29,9 @@ public class Venta {
     private Usuario usuario;
 
     @Column(nullable = false)
-    private Date fecha;
+    private LocalDate fecha;
 
     @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL)
     private List<DetalleVenta> detalles;
 
-    // Getters y Setters
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Usuario getUsuario() {
-        return usuario;
-    }
-
-    public void setUsuario(Usuario usuario) {
-        this.usuario = usuario;
-    }
-
-    public Date getFecha() {
-        return fecha;
-    }
-
-    public void setFecha(Date fecha) {
-        this.fecha = fecha;
-    }
-
-    public List<DetalleVenta> getDetalles() {
-        return detalles;
-    }
-
-    public void setDetalles(List<DetalleVenta> detalles) {
-        this.detalles = detalles;
-    }
 }

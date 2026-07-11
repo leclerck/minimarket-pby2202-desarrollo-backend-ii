@@ -3,7 +3,6 @@ package com.minimarket.service.impl;
 import com.minimarket.entity.DetalleVenta;
 import com.minimarket.repository.DetalleVentaRepository;
 import com.minimarket.service.DetalleVentaService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,8 +10,11 @@ import java.util.List;
 @Service
 public class DetalleVentaServiceImpl implements DetalleVentaService {
 
-    @Autowired
-    private DetalleVentaRepository detalleVentaRepository;
+    private final DetalleVentaRepository detalleVentaRepository;
+    
+    public DetalleVentaServiceImpl(DetalleVentaRepository detalleVentaRepository) {
+        this.detalleVentaRepository = detalleVentaRepository;
+    }
 
     @Override
     public List<DetalleVenta> findAll() {

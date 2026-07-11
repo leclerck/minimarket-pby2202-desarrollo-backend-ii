@@ -1,12 +1,26 @@
 package com.minimarket.entity;
 
 import jakarta.persistence.*;
-import java.util.Date;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+
+import java.time.LocalDate;
 
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString
 public class Inventario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @ManyToOne
@@ -20,46 +34,6 @@ public class Inventario {
     private String tipoMovimiento; // Ejemplo: "Entrada" o "Salida"
 
     @Column(nullable = false)
-    private Date fechaMovimiento;
+    private LocalDate fechaMovimiento;
 
-    // Getters y Setters
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Producto getProducto() {
-        return producto;
-    }
-
-    public void setProducto(Producto producto) {
-        this.producto = producto;
-    }
-
-    public Integer getCantidad() {
-        return cantidad;
-    }
-
-    public void setCantidad(Integer cantidad) {
-        this.cantidad = cantidad;
-    }
-
-    public String getTipoMovimiento() {
-        return tipoMovimiento;
-    }
-
-    public void setTipoMovimiento(String tipoMovimiento) {
-        this.tipoMovimiento = tipoMovimiento;
-    }
-
-    public Date getFechaMovimiento() {
-        return fechaMovimiento;
-    }
-
-    public void setFechaMovimiento(Date fechaMovimiento) {
-        this.fechaMovimiento = fechaMovimiento;
-    }
 }
