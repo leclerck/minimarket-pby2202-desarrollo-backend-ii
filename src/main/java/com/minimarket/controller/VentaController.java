@@ -1,9 +1,7 @@
 package com.minimarket.controller;
 
-import com.minimarket.dto.DtoMapper;
 import com.minimarket.dto.VentaDto;
 import com.minimarket.dto.request.VentaRequestDto;
-import com.minimarket.entity.Venta;
 import com.minimarket.service.VentaService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -12,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * Ventas. Lectura para STAFF/ADMIN; creación también permitida para USER (clientes).
+ * Ventas. Lectura para CAJERO/ADMIN; escritura solo para CAJERO.
  */
 @RestController
 @RequestMapping("/api/ventas")
@@ -20,29 +18,26 @@ public class VentaController {
 
     private final VentaService ventaService;
 
-    private final DtoMapper dtoMapper;
-
-    public VentaController(VentaService ventaService, DtoMapper dtoMapper) {
+    public VentaController(VentaService ventaService) {
         this.ventaService = ventaService;
-        this.dtoMapper = dtoMapper;
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('CAJERO', 'ADMIN')")
     public List<VentaDto> listarVentas() {
-        return dtoMapper.toVentaDtos(ventaService.findAll());
+        return ventaService.findAll();
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('CAJERO', 'ADMIN')")
     public ResponseEntity<VentaDto> obtenerVentaPorId(@PathVariable Long id) {
-        Venta venta = ventaService.findById(id);
-        return (venta != null) ? ResponseEntity.ok(dtoMapper.toDto(venta)) : ResponseEntity.notFound().build();
+        VentaDto dto = ventaService.findById(id);
+        return dto != null ? ResponseEntity.ok(dto) : ResponseEntity.notFound().build();
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('USER', 'STAFF', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('CAJERO')")
     public VentaDto guardarVenta(@RequestBody VentaRequestDto request) {
-        return dtoMapper.toDto(ventaService.save(dtoMapper.toEntity(request)));
+        return ventaService.save(request);
     }
 }

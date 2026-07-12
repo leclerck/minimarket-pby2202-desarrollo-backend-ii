@@ -2,8 +2,6 @@ package com.minimarket.controller;
 
 import com.minimarket.dto.CarritoDto;
 import com.minimarket.dto.request.CarritoRequestDto;
-import com.minimarket.dto.DtoMapper;
-import com.minimarket.entity.Carrito;
 import com.minimarket.service.CarritoService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -12,54 +10,49 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * Carrito de compras. Accesible para clientes (USER), personal (STAFF) y administradores.
+ * Carrito de compras. Acceso restringido a CAJERO y ADMIN.
  */
 @RestController
 @RequestMapping("/api/carrito")
-@PreAuthorize("hasAnyRole('USER', 'STAFF', 'ADMIN')")
+@PreAuthorize("hasAnyRole('CAJERO', 'ADMIN')")
 public class CarritoController {
 
     private final CarritoService carritoService;
-    private final DtoMapper dtoMapper;
 
-    public CarritoController(CarritoService carritoService, DtoMapper dtoMapper) {
+    public CarritoController(CarritoService carritoService) {
         this.carritoService = carritoService;
-        this.dtoMapper = dtoMapper;
     }
 
     @GetMapping
     public List<CarritoDto> listarCarrito() {
-        return dtoMapper.toCarritoDtos(carritoService.findAll());
+        return carritoService.findAll();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<CarritoDto> obtenerCarritoPorId(@PathVariable Long id) {
-        Carrito carrito = carritoService.findById(id);
-        return (carrito != null) ? ResponseEntity.ok(dtoMapper.toDto(carrito)) : ResponseEntity.notFound().build();
+        CarritoDto dto = carritoService.findById(id);
+        return dto != null ? ResponseEntity.ok(dto) : ResponseEntity.notFound().build();
     }
 
     @PostMapping
     public CarritoDto agregarProductoAlCarrito(@RequestBody CarritoRequestDto request) {
-        return dtoMapper.toDto(carritoService.save(dtoMapper.toEntity(request)));
+        return carritoService.save(request);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CarritoDto> actualizarCarrito(@PathVariable Long id, @RequestBody CarritoRequestDto request) {
-        Carrito existente = carritoService.findById(id);
-        if (existente != null) {
-            dtoMapper.applyCarritoRequest(existente, request);
-            return ResponseEntity.ok(dtoMapper.toDto(carritoService.save(existente)));
-        }
-        return ResponseEntity.notFound().build();
+    public ResponseEntity<CarritoDto> actualizarCarrito(@PathVariable Long id,
+                                                        @RequestBody CarritoRequestDto request) {
+        return carritoService.update(id, request)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarProductoDelCarrito(@PathVariable Long id) {
-        Carrito carrito = carritoService.findById(id);
-        if (carrito != null) {
-            carritoService.deleteById(id);
-            return ResponseEntity.noContent().build();
+        if (carritoService.findById(id) == null) {
+            return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.notFound().build();
+        carritoService.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 }

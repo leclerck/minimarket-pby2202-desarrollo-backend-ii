@@ -2,8 +2,6 @@ package com.minimarket.controller;
 
 import com.minimarket.dto.CategoriaDto;
 import com.minimarket.dto.request.CategoriaRequestDto;
-import com.minimarket.dto.DtoMapper;
-import com.minimarket.entity.Categoria;
 import com.minimarket.service.CategoriaService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -12,56 +10,51 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * Categorías de productos. GET público; escritura solo para STAFF y ADMIN.
+ * Categorías de productos. GET público; escritura solo para ADMIN.
  */
 @RestController
 @RequestMapping("/api/categorias")
 public class CategoriaController {
 
     private final CategoriaService categoriaService;
-    private final DtoMapper dtoMapper;
 
-    public CategoriaController(CategoriaService categoriaService, DtoMapper dtoMapper) {
+    public CategoriaController(CategoriaService categoriaService) {
         this.categoriaService = categoriaService;
-        this.dtoMapper = dtoMapper;
     }
 
     @GetMapping
     public List<CategoriaDto> listarCategorias() {
-        return dtoMapper.toCategoriaDtos(categoriaService.findAll());
+        return categoriaService.findAll();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<CategoriaDto> obtenerCategoriaPorId(@PathVariable Long id) {
-        Categoria categoria = categoriaService.findById(id);
-        return (categoria != null) ? ResponseEntity.ok(dtoMapper.toDto(categoria)) : ResponseEntity.notFound().build();
+        CategoriaDto dto = categoriaService.findById(id);
+        return dto != null ? ResponseEntity.ok(dto) : ResponseEntity.notFound().build();
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public CategoriaDto guardarCategoria(@RequestBody CategoriaRequestDto request) {
-        return dtoMapper.toDto(categoriaService.save(dtoMapper.toEntity(request)));
+        return categoriaService.save(request);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
-    public ResponseEntity<CategoriaDto> actualizarCategoria(@PathVariable Long id, @RequestBody CategoriaRequestDto request) {
-        Categoria categoriaExistente = categoriaService.findById(id);
-        if (categoriaExistente != null) {
-            dtoMapper.applyCategoriaRequest(categoriaExistente, request);
-            return ResponseEntity.ok(dtoMapper.toDto(categoriaService.save(categoriaExistente)));
-        }
-        return ResponseEntity.notFound().build();
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    public ResponseEntity<CategoriaDto> actualizarCategoria(@PathVariable Long id,
+                                                            @RequestBody CategoriaRequestDto request) {
+        return categoriaService.update(id, request)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<Void> eliminarCategoria(@PathVariable Long id) {
-        Categoria categoria = categoriaService.findById(id);
-        if (categoria != null) {
-            categoriaService.deleteById(id);
-            return ResponseEntity.noContent().build();
+        if (categoriaService.findById(id) == null) {
+            return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.notFound().build();
+        categoriaService.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 }

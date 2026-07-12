@@ -1,9 +1,7 @@
 package com.minimarket.controller;
 
-import com.minimarket.dto.DtoMapper;
 import com.minimarket.dto.ProductoDto;
 import com.minimarket.dto.request.ProductoRequestDto;
-import com.minimarket.entity.Producto;
 import com.minimarket.service.ProductoService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -12,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * Catálogo de productos. GET público; escritura solo para STAFF y ADMIN.
+ * Catálogo de productos. GET público; escritura solo para ADMIN.
  */
 @RestController
 @RequestMapping("/api/productos")
@@ -20,49 +18,43 @@ public class ProductoController {
 
     private final ProductoService productoService;
 
-    private final DtoMapper dtoMapper;
-
-    public ProductoController(ProductoService productoService, DtoMapper dtoMapper) {
+    public ProductoController(ProductoService productoService) {
         this.productoService = productoService;
-        this.dtoMapper = dtoMapper;
     }
 
     @GetMapping
     public List<ProductoDto> listarProductos() {
-        return dtoMapper.toProductoDtos(productoService.findAll());
+        return productoService.findAll();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ProductoDto> obtenerProductoPorId(@PathVariable Long id) {
-        Producto producto = productoService.findById(id);
-        return (producto != null) ? ResponseEntity.ok(dtoMapper.toDto(producto)) : ResponseEntity.notFound().build();
+        ProductoDto dto = productoService.findById(id);
+        return dto != null ? ResponseEntity.ok(dto) : ResponseEntity.notFound().build();
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ProductoDto guardarProducto(@RequestBody ProductoRequestDto request) {
-        return dtoMapper.toDto(productoService.save(dtoMapper.toEntity(request)));
+        return productoService.save(request);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
-    public ResponseEntity<ProductoDto> actualizarProducto(@PathVariable Long id, @RequestBody ProductoRequestDto request) {
-        Producto productoExistente = productoService.findById(id);
-        if (productoExistente != null) {
-            dtoMapper.applyProductoRequest(productoExistente, request);
-            return ResponseEntity.ok(dtoMapper.toDto(productoService.save(productoExistente)));
-        }
-        return ResponseEntity.notFound().build();
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    public ResponseEntity<ProductoDto> actualizarProducto(@PathVariable Long id,
+                                                          @RequestBody ProductoRequestDto request) {
+        return productoService.update(id, request)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<Void> eliminarProducto(@PathVariable Long id) {
-        Producto producto = productoService.findById(id);
-        if (producto != null) {
-            productoService.deleteById(id);
-            return ResponseEntity.noContent().build();
+        if (productoService.findById(id) == null) {
+            return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.notFound().build();
+        productoService.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 }

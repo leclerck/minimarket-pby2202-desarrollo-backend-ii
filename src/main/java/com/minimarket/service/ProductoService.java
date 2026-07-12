@@ -1,13 +1,16 @@
 package com.minimarket.service;
 
-import com.minimarket.entity.Producto;
+import com.minimarket.dto.ProductoDto;
+import com.minimarket.dto.request.ProductoRequestDto;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ProductoService {
-    List<Producto> findAll();
-    Producto findById(Long id);
-    Producto save(Producto producto);
+    List<ProductoDto> findAll();
+    ProductoDto findById(Long id);
+    ProductoDto save(ProductoRequestDto request);
+    Optional<ProductoDto> update(Long id, ProductoRequestDto request);
     void deleteById(Long id);
-    List<Producto> findByCategoriaId(Long categoriaId);
+    List<ProductoDto> findByCategoriaId(Long categoriaId);
 }
