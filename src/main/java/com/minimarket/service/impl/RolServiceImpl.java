@@ -5,8 +5,6 @@ import com.minimarket.repository.RolRepository;
 import com.minimarket.service.RolService;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 @Service
 public class RolServiceImpl implements RolService {
 
@@ -17,7 +15,7 @@ public class RolServiceImpl implements RolService {
     }
 
     @Override
-    public Optional<Rol> findByNombre(String nombre) {
-        return rolRepository.findByNombre(nombre);
+    public Rol findByNombre(String nombre) {
+        return rolRepository.findByNombre(nombre).orElse(null);
     }
 }

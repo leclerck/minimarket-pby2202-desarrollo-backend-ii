@@ -2,6 +2,7 @@ package com.minimarket;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minimarket.security.model.LoginRequest;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -25,7 +26,7 @@ class SecurityIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private String obtainToken(String username, String password) throws Exception {
+    private String obtenerToken(String username, String password) throws Exception {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setUsername(username);
         loginRequest.setPassword(password);
@@ -40,14 +41,16 @@ class SecurityIntegrationTest {
     }
 
     @Test
-    void unauthenticatedAccessToUsuariosReturns401() throws Exception {
+    @DisplayName("Acceso sin token retorna 401")
+    void accesoSinToken_retorna401() throws Exception {
         mockMvc.perform(get("/api/usuarios"))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
-    void staffCanAccessInventario() throws Exception {
-        String token = obtainToken("staff", "staff123");
+    @DisplayName("Cajero puede acceder a inventario")
+    void cajeroAccedeAInventario_retorna200() throws Exception {
+        String token = obtenerToken("cajero", "cajero123");
 
         mockMvc.perform(get("/api/inventario")
                         .header("Authorization", "Bearer " + token))
@@ -55,13 +58,27 @@ class SecurityIntegrationTest {
     }
 
     @Test
-    void clienteCannotPostProducto() throws Exception {
-        String token = obtainToken("cliente", "cliente123");
+    @DisplayName("Cajero no puede crear productos (solo ADMIN)")
+    void cajeroNoPuedeCrearProducto_retorna403() throws Exception {
+        String token = obtenerToken("cajero", "cajero123");
 
         mockMvc.perform(post("/api/productos")
                         .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"nombre\":\"MockProd2\",\"precio\":10,\"stock\":5}"))
+                        .content("{\"nombre\":\"ProductoPrueba\",\"precio\":10,\"stock\":5}"))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("Credenciales incorrectas retornan 401")
+    void credencialesIncorrectas_retorna401() throws Exception {
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setUsername("cajero");
+        loginRequest.setPassword("contraseña_incorrecta");
+
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginRequest)))
+                .andExpect(status().isUnauthorized());
     }
 }

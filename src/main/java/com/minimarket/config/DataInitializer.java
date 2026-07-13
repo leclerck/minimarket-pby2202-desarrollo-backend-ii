@@ -30,12 +30,10 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        Rol userRole = findOrCreateRole("USER");
-        Rol staffRole = findOrCreateRole("STAFF");
+        Rol userRole = findOrCreateRole("CAJERO");
         Rol adminRole = findOrCreateRole("ADMIN");
 
-        createUserIfMissing("cliente", "cliente123", userRole);
-        createUserIfMissing("staff", "staff123", staffRole);
+        createUserIfMissing("cajero", "cajero123", userRole);
         createUserIfMissing("admin", "admin123", adminRole);
     }
 
