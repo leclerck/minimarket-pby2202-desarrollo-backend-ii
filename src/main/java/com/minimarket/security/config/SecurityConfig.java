@@ -81,6 +81,11 @@ public class SecurityConfig {
                         .requestMatchers("/public/**").permitAll()
 
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/swagger-ui.html").permitAll()
+                        .requestMatchers("/v3/api-docs/**").permitAll()
+                        .requestMatchers("/swagger-resources/**").permitAll()
+                        .requestMatchers("/webjars/**").permitAll()
+                        .requestMatchers("/swagger-ui/**").permitAll()
 
                         // Catálogo visible sin autenticación (solo lectura)
 
