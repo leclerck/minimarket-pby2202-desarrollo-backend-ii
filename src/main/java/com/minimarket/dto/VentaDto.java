@@ -8,10 +8,13 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import org.springframework.hateoas.server.core.Relation;
+
 @Getter
 @Setter
 @ToString
 @EqualsAndHashCode
+@Relation(collectionRelation = "ventas", itemRelation = "venta")
 public class VentaDto {
 
     private Long id;

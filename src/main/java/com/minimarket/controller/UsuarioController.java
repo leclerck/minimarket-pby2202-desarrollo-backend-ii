@@ -8,10 +8,14 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -38,56 +42,55 @@ public class UsuarioController {
     @GetMapping
     @Operation(summary = "Listar todos los usuarios",
                description = "Retorna la lista de todos los usuarios registrados. Requiere rol ADMIN.")
-    @ApiResponse(responseCode = "200", description = "Lista de usuarios",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = UsuarioDto.class)))
+    @ApiResponse(responseCode = "200", description = "Lista de usuarios")
     @ApiResponse(responseCode = "401", description = "No autenticado", content = @Content)
     @ApiResponse(responseCode = "403", description = "Sin permiso (requiere ADMIN)", content = @Content)
-    public List<UsuarioDto> listarUsuarios() {
-        return usuarioService.findAll();
+    public CollectionModel<EntityModel<UsuarioDto>> listarUsuarios() {
+        List<EntityModel<UsuarioDto>> models = usuarioService.findAll()
+                .stream().map(this::toModel).toList();
+        return CollectionModel.of(models,
+                linkTo(methodOn(UsuarioController.class).listarUsuarios()).withSelfRel());
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Obtener usuario por ID",
                description = "Retorna un usuario según su ID. Requiere rol ADMIN.")
-    @ApiResponse(responseCode = "200", description = "Usuario encontrado",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = UsuarioDto.class)))
+    @ApiResponse(responseCode = "200", description = "Usuario encontrado")
     @ApiResponse(responseCode = "401", description = "No autenticado", content = @Content)
     @ApiResponse(responseCode = "403", description = "Sin permiso (requiere ADMIN)", content = @Content)
     @ApiResponse(responseCode = "404", description = "Usuario no encontrado", content = @Content)
-    public ResponseEntity<UsuarioDto> obtenerUsuarioPorId(
+    public ResponseEntity<EntityModel<UsuarioDto>> obtenerUsuarioPorId(
             @Parameter(name = "id", description = "ID del usuario", example = "1", in = ParameterIn.PATH)
             @PathVariable Long id) {
         UsuarioDto dto = usuarioService.findById(id);
-        return dto != null ? ResponseEntity.ok(dto) : ResponseEntity.notFound().build();
+        return dto != null ? ResponseEntity.ok(toModel(dto)) : ResponseEntity.notFound().build();
     }
 
     @PostMapping
     @Operation(summary = "Crear usuario",
                description = "Crea un nuevo usuario en el sistema. La contraseña se almacena con BCrypt. Requiere rol ADMIN.")
-    @ApiResponse(responseCode = "200", description = "Usuario creado (la respuesta nunca incluye la contraseña)",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = UsuarioDto.class)))
+    @ApiResponse(responseCode = "200", description = "Usuario creado (la respuesta nunca incluye la contraseña)")
     @ApiResponse(responseCode = "400", description = "Datos inválidos (ej. username vacío)", content = @Content)
     @ApiResponse(responseCode = "401", description = "No autenticado", content = @Content)
     @ApiResponse(responseCode = "403", description = "Sin permiso (requiere ADMIN)", content = @Content)
-    public UsuarioDto guardarUsuario(@RequestBody UsuarioRequestDto request) {
-        return usuarioService.save(request);
+    public EntityModel<UsuarioDto> guardarUsuario(@RequestBody UsuarioRequestDto request) {
+        return toModel(usuarioService.save(request));
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "Actualizar usuario",
                description = "Actualiza los datos de un usuario existente. Requiere rol ADMIN.")
-    @ApiResponse(responseCode = "200", description = "Usuario actualizado",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = UsuarioDto.class)))
+    @ApiResponse(responseCode = "200", description = "Usuario actualizado")
     @ApiResponse(responseCode = "400", description = "Datos inválidos", content = @Content)
     @ApiResponse(responseCode = "401", description = "No autenticado", content = @Content)
     @ApiResponse(responseCode = "403", description = "Sin permiso (requiere ADMIN)", content = @Content)
     @ApiResponse(responseCode = "404", description = "Usuario no encontrado", content = @Content)
-    public ResponseEntity<UsuarioDto> actualizarUsuario(
+    public ResponseEntity<EntityModel<UsuarioDto>> actualizarUsuario(
             @Parameter(name = "id", description = "ID del usuario a actualizar", example = "1", in = ParameterIn.PATH)
             @PathVariable Long id,
             @RequestBody UsuarioRequestDto request) {
         return usuarioService.update(id, request)
-                .map(ResponseEntity::ok)
+                .map(dto -> ResponseEntity.ok(toModel(dto)))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
@@ -106,5 +109,11 @@ public class UsuarioController {
         }
         usuarioService.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    private EntityModel<UsuarioDto> toModel(UsuarioDto dto) {
+        return EntityModel.of(dto,
+                linkTo(methodOn(UsuarioController.class).obtenerUsuarioPorId(dto.getId())).withSelfRel(),
+                linkTo(methodOn(UsuarioController.class).listarUsuarios()).withRel("usuarios"));
     }
 }

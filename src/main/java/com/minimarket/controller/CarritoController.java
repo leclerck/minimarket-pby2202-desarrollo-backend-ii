@@ -8,10 +8,14 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -38,56 +42,55 @@ public class CarritoController {
     @GetMapping
     @Operation(summary = "Listar todos los ítems del carrito",
                description = "Retorna todos los ítems del carrito. Requiere rol CAJERO o ADMIN.")
-    @ApiResponse(responseCode = "200", description = "Lista de ítems del carrito",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = CarritoDto.class)))
+    @ApiResponse(responseCode = "200", description = "Lista de ítems del carrito")
     @ApiResponse(responseCode = "401", description = "No autenticado", content = @Content)
     @ApiResponse(responseCode = "403", description = "Sin permiso (requiere CAJERO o ADMIN)", content = @Content)
-    public List<CarritoDto> listarCarrito() {
-        return carritoService.findAll();
+    public CollectionModel<EntityModel<CarritoDto>> listarCarrito() {
+        List<EntityModel<CarritoDto>> models = carritoService.findAll()
+                .stream().map(this::toModel).toList();
+        return CollectionModel.of(models,
+                linkTo(methodOn(CarritoController.class).listarCarrito()).withSelfRel());
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Obtener ítem del carrito por ID",
                description = "Retorna un ítem del carrito según su ID. Requiere rol CAJERO o ADMIN.")
-    @ApiResponse(responseCode = "200", description = "Ítem encontrado",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = CarritoDto.class)))
+    @ApiResponse(responseCode = "200", description = "Ítem encontrado")
     @ApiResponse(responseCode = "401", description = "No autenticado", content = @Content)
     @ApiResponse(responseCode = "403", description = "Sin permiso", content = @Content)
     @ApiResponse(responseCode = "404", description = "Ítem no encontrado", content = @Content)
-    public ResponseEntity<CarritoDto> obtenerCarritoPorId(
+    public ResponseEntity<EntityModel<CarritoDto>> obtenerCarritoPorId(
             @Parameter(name = "id", description = "ID del ítem del carrito", example = "1", in = ParameterIn.PATH)
             @PathVariable Long id) {
         CarritoDto dto = carritoService.findById(id);
-        return dto != null ? ResponseEntity.ok(dto) : ResponseEntity.notFound().build();
+        return dto != null ? ResponseEntity.ok(toModel(dto)) : ResponseEntity.notFound().build();
     }
 
     @PostMapping
     @Operation(summary = "Agregar producto al carrito",
                description = "Agrega un producto al carrito de compras. Requiere rol CAJERO o ADMIN.")
-    @ApiResponse(responseCode = "200", description = "Producto agregado al carrito",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = CarritoDto.class)))
+    @ApiResponse(responseCode = "200", description = "Producto agregado al carrito")
     @ApiResponse(responseCode = "400", description = "Datos inválidos (ej. cantidad ≤ 0 o IDs inexistentes)", content = @Content)
     @ApiResponse(responseCode = "401", description = "No autenticado", content = @Content)
     @ApiResponse(responseCode = "403", description = "Sin permiso", content = @Content)
-    public CarritoDto agregarProductoAlCarrito(@RequestBody CarritoRequestDto request) {
-        return carritoService.save(request);
+    public EntityModel<CarritoDto> agregarProductoAlCarrito(@RequestBody CarritoRequestDto request) {
+        return toModel(carritoService.save(request));
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "Actualizar ítem del carrito",
                description = "Actualiza los datos de un ítem existente en el carrito. Requiere rol CAJERO o ADMIN.")
-    @ApiResponse(responseCode = "200", description = "Ítem actualizado",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = CarritoDto.class)))
+    @ApiResponse(responseCode = "200", description = "Ítem actualizado")
     @ApiResponse(responseCode = "400", description = "Datos inválidos", content = @Content)
     @ApiResponse(responseCode = "401", description = "No autenticado", content = @Content)
     @ApiResponse(responseCode = "403", description = "Sin permiso", content = @Content)
     @ApiResponse(responseCode = "404", description = "Ítem no encontrado", content = @Content)
-    public ResponseEntity<CarritoDto> actualizarCarrito(
+    public ResponseEntity<EntityModel<CarritoDto>> actualizarCarrito(
             @Parameter(name = "id", description = "ID del ítem a actualizar", example = "1", in = ParameterIn.PATH)
             @PathVariable Long id,
             @RequestBody CarritoRequestDto request) {
         return carritoService.update(id, request)
-                .map(ResponseEntity::ok)
+                .map(dto -> ResponseEntity.ok(toModel(dto)))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
@@ -106,5 +109,20 @@ public class CarritoController {
         }
         carritoService.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    private EntityModel<CarritoDto> toModel(CarritoDto dto) {
+        EntityModel<CarritoDto> model = EntityModel.of(dto,
+                linkTo(methodOn(CarritoController.class).obtenerCarritoPorId(dto.getId())).withSelfRel(),
+                linkTo(methodOn(CarritoController.class).listarCarrito()).withRel("carrito"));
+        if (dto.getProductoId() != null) {
+            model.add(linkTo(methodOn(ProductoController.class)
+                    .obtenerProductoPorId(dto.getProductoId())).withRel("producto"));
+        }
+        if (dto.getUsuarioId() != null) {
+            model.add(linkTo(methodOn(UsuarioController.class)
+                    .obtenerUsuarioPorId(dto.getUsuarioId())).withRel("usuario"));
+        }
+        return model;
     }
 }
